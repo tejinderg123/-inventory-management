@@ -6,6 +6,7 @@ export default {
     orders: '注文',
     finance: '財務',
     demandForecast: '需要予測',
+    restocking: '再入荷',
     companyName: '触媒コンポーネンツ',
     subtitle: '在庫管理システム'
   },
@@ -309,6 +310,33 @@ export default {
     english: 'English',
     japanese: '日本語',
     selectLanguage: '言語を選択'
+  },
+
+  // Restocking
+  restocking: {
+    title: '再入荷',
+    description: '需要予測に基づいて在庫補充注文を自動推奨・送信',
+    budget: '利用可能予算',
+    budgetUsed: '使用済み',
+    itemsSelected: '品目選択済み',
+    recommendations: '再入荷推奨品',
+    noRecommendations: '在庫に一致する需要増加品目が見つかりません。',
+    placeOrder: '再入荷注文を発注',
+    orderSuccess: '注文が送信されました。14日以内に配達予定です。',
+    dismiss: '閉じる',
+    table: {
+      select: '選択',
+      sku: 'SKU',
+      itemName: '品目名',
+      demandGap: '需要ギャップ',
+      unitCost: '単価',
+      qtyToOrder: '発注数量',
+      lineTotal: '合計金額'
+    },
+    submittedOrders: '送信済み再入荷注文',
+    dateSubmitted: '送信日',
+    expectedDelivery: '予定配達日',
+    leadTime: '14日'
   },
 
   // Common

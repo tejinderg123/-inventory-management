@@ -1,74 +1,81 @@
 # CLAUDE.md
 
-Factory Inventory Management System Demo with GitHub integration - Full-stack application with Vue 3 frontend, Python FastAPI backend, and in-memory mock data (no database).
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Critical Tool Usage Rules
+Factory Inventory Management System — full-stack demo with Vue 3 frontend, Python FastAPI backend, and in-memory mock data (no database).
 
-### Subagents
-Use the Task tool with these specialized subagents for appropriate tasks:
+## Commands
 
-- **vue-expert**: Use for Vue 3 frontend features, UI components, styling, and client-side functionality
-  - Examples: Creating components, fixing reactivity issues, performance optimization, complex state management
-  - **MANDATORY RULE: ANY time you need to create or significantly modify a .vue file, you MUST delegate to vue-expert**
-- **code-reviewer**: Use after writing significant code to review quality and best practices
-- **Explore**: Use for understanding codebase structure, searching for patterns, or answering questions about how components work
-- **general-purpose**: Use for complex multi-step tasks or when other agents don't fit
-
-### Skills
-- **backend-api-test** skill: Use when writing or modifying tests in `tests/backend` directory with pytest and FastAPI TestClient
-
-### MCP Tools
-- **ALWAYS use GitHub MCP tools** (`mcp__github__*`) for ALL GitHub operations
-  - Exception: Local branches only - use `git checkout -b` instead of `mcp__github__create_branch`
-- **ALWAYS use Playwright MCP tools** (`mcp__playwright__*`) for browser testing
-  - Test against: `http://localhost:3000` (frontend), `http://localhost:8001` (API)
-
-## Stack
-- **Frontend**: Vue 3 + Composition API + Vite (port 3000)
-- **Backend**: Python FastAPI (port 8001)
-- **Data**: JSON files in `server/data/` loaded via `server/mock_data.py`
-
-## Quick Start
-
+### Backend
 ```bash
-# Backend
 cd server
-uv run python main.py
-
-# Frontend
-cd client
-npm install && npm run dev
+uv run python main.py          # Start server on http://localhost:8001
+                               # API docs at http://localhost:8001/docs
 ```
+
+### Frontend
+```bash
+cd client
+npm install && npm run dev     # Start dev server on http://localhost:3000
+npm run build                  # Production build
+```
+
+### Tests
+```bash
+cd tests
+uv run pytest backend/ -v                        # Run all backend tests
+uv run pytest backend/test_inventory.py -v       # Run a single test file
+uv run pytest backend/test_inventory.py::test_name -v  # Run a single test
+```
+
+## Architecture
+
+**Stack**: Vue 3 + Composition API + Vite (port 3000) → FastAPI (port 8001) → JSON files in `server/data/`
+
+**Data flow**: Global filters in `client/src/composables/useFilters.js` → `client/src/api.js` (Axios) → FastAPI query params → in-memory filtering in `server/main.py` → Pydantic validation → Vue computed properties
+
+**Filter system**: 4 shared filters (Time Period, Warehouse, Category, Order Status) stored as module-level refs in `useFilters.js`, shared across all views without a Vuex/Pinia store. Filter changes trigger `watch` in each view to reload data.
+
+**Mock data**: Loaded once at server startup from `server/data/*.json` via `server/mock_data.py`. Changes don't persist — restart server to reload. Pydantic models in `server/main.py` must match JSON structure.
+
+**Tests**: pytest + FastAPI TestClient. `tests/backend/conftest.py` adds `server/` to sys.path and provides `client` fixture. Run from `tests/` directory (pytest.ini sets `testpaths = backend`).
+
+## Code Style
+
+- Always document non-obvious logic changes with comments
 
 ## Key Patterns
 
-**Filter System**: 4 filters (Time Period, Warehouse, Category, Order Status) apply to all data via query params
-**Data Flow**: Vue filters → `client/src/api.js` → FastAPI → In-memory filtering → Pydantic validation → Computed properties
-**Reactivity**: Raw data in refs (`allOrders`, `inventoryItems`), derived data in computed properties
+**Reactivity**: Raw data in `ref()` (`allOrders`, `inventoryItems`), derived/filtered data in `computed()`. Never mutate computed properties or props directly.
 
-## API Endpoints
-- `GET /api/inventory` - Filters: warehouse, category
-- `GET /api/orders` - Filters: warehouse, category, status, month
-- `GET /api/dashboard/summary` - All filters
-- `GET /api/demand`, `/api/backlog` - No filters
-- `GET /api/spending/*` - Summary, monthly, categories, transactions
+**API filtering**: Pass `'all'` to skip a filter; endpoints check `if param and param != 'all'` before filtering. Inventory has no month filter (no time dimension).
+
+**v-for keys**: Always use unique IDs (`sku`, `order_number`), never array index.
+
+**Date handling**: Always validate before calling `.getMonth()` — check `!isNaN(date.getTime())`.
+
+## Tool Usage Rules
+
+### Subagents
+- **vue-expert**: MANDATORY for creating or significantly modifying any `.vue` file
+- **code-reviewer**: Use after writing significant code
+- **Explore**: Use for codebase exploration and pattern searches
+- **backend-api-test** skill: Use when writing/modifying tests in `tests/backend/`
+
+### MCP Tools
+- **GitHub MCP** (`mcp__github__*`): Use for ALL GitHub operations (exception: local branches — use `git checkout -b`)
+- **Playwright MCP** (`mcp__playwright__*`): Use for all browser testing against `http://localhost:3000` / `http://localhost:8001`
 
 ## Common Issues
-1. Use unique keys in v-for (not `index`) - use `sku`, `month`, etc.
-2. Validate dates before `.getMonth()` calls
-3. Update Pydantic models when changing JSON data structure
-4. Inventory filters don't support month (no time dimension)
-5. Revenue goals: $800K/month single, $9.6M YTD all months
 
-## File Locations
-- Views: `client/src/views/*.vue`
-- API Client: `client/src/api.js`
-- Backend: `server/main.py`, `server/mock_data.py`
-- Data: `server/data/*.json`
-- Styles: `client/src/App.vue`
+1. Update Pydantic models in `server/main.py` whenever `server/data/*.json` structure changes
+2. Revenue goals: $800K/month single warehouse, $9.6M YTD all warehouses
+3. Inventory endpoint does not support `month` filter
+4. Consistent category names required across all data files — `inventory.json` is the source of truth
 
 ## Design System
-- Colors: Slate/gray (#0f172a, #64748b, #e2e8f0)
-- Status: green/blue/yellow/red
-- Charts: Custom SVG, CSS Grid for layouts
+
+- Colors: Slate/gray (`#0f172a`, `#64748b`, `#e2e8f0`); status: green/blue/yellow/red
+- Charts: Custom SVG with computed properties; CSS Grid for layouts
 - No emojis in UI
+- Currency formatting: `toLocaleString('en-US', { style: 'currency', currency: 'USD' })`

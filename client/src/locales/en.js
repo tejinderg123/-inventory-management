@@ -6,6 +6,7 @@ export default {
     orders: 'Orders',
     finance: 'Finance',
     demandForecast: 'Demand Forecast',
+    restocking: 'Restocking',
     companyName: 'Catalyst Components',
     subtitle: 'Inventory Management System'
   },
@@ -309,6 +310,33 @@ export default {
     english: 'English',
     japanese: 'Japanese',
     selectLanguage: 'Select Language'
+  },
+
+  // Restocking
+  restocking: {
+    title: 'Restocking',
+    description: 'Auto-recommend and submit inventory restocking orders based on demand forecasts',
+    budget: 'Available Budget',
+    budgetUsed: 'of budget used',
+    itemsSelected: 'items selected',
+    recommendations: 'Restocking Recommendations',
+    noRecommendations: 'No increasing-demand items with matching inventory found.',
+    placeOrder: 'Place Restocking Order',
+    orderSuccess: 'Order submitted successfully. Expected delivery in 14 days.',
+    dismiss: 'Dismiss',
+    table: {
+      select: 'Select',
+      sku: 'SKU',
+      itemName: 'Item Name',
+      demandGap: 'Demand Gap',
+      unitCost: 'Unit Cost',
+      qtyToOrder: 'Qty to Order',
+      lineTotal: 'Line Total'
+    },
+    submittedOrders: 'Submitted Restocking Orders',
+    dateSubmitted: 'Date Submitted',
+    expectedDelivery: 'Expected Delivery',
+    leadTime: '14 days'
   },
 
   // Common
